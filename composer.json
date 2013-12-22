@@ -1,0 +1,16 @@
+{
+    "name": "vendor/d-s-l",
+    "description": "Description of project DSL.",
+    "authors": [
+        {
+            "name": "anorgan",
+            "email": "your@email.here"
+        }
+    ],
+    "require": {
+
+    },
+    "autoload": {
+        "psr-0": {"": "src"}
+    }
+}
