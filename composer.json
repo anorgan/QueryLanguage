@@ -8,7 +8,8 @@
         }
     ],
     "require": {
-
+        "maximebf/parsec": "1.0.0",
+        "ferno/loco": "dev-master"
     },
     "autoload": {
         "psr-0": {"": "src"}
