@@ -11,6 +11,9 @@
         "maximebf/parsec": "1.0.0",
         "ferno/loco": "dev-master"
     },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
     "autoload": {
         "psr-0": {"": "src"}
     }

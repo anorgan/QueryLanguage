@@ -1,67 +1,37 @@
 <?php
 
 require __DIR__ .'/vendor/autoload.php';
-//
-//$select = [
-//    'field',
-//    'other_field',
-//    'Relation' => [
-//        'field',
-//        'relation_field',
-//        'RelationsRelation' => [
-//            'field',
-//            'relations_relation_field',
-//        ]
-//    ],
-//    'OtherRelation' => [
-//        'OtherRelationsRelation' => '*'
-//    ]
-//];
-//
-//$output= [];
-//
-//$arrayIterator  = new ArrayIterator(($select));
-//$recursiveArrayIterator  = new RecursiveArrayIterator(
-//        $arrayIterator);
-//$selectIterator = new RecursiveIteratorIterator(
-//        $recursiveArrayIterator, RecursiveIteratorIterator::SELF_FIRST);
-//
-//while ($selectIterator->valid()) {
-//    print_r($selectIterator->key()) .'#'. PHP_EOL;
-//    print_r($selectIterator->current()). PHP_EOL;
-//    //echo sprintf('%s => %s', $selectIterator->key(), $selectIterator->current()) . PHP_EOL;
-//
-//    $selectIterator->next();
-//}
 
 
+use Anorgan\Dsl\Query;
 
-use Anorgan\Dsl;
+$query = new \Anorgan\Query();
 
-$select = new Dsl\Select([
-    'field',
-    'other_field',
-    'Relation.field',
-    'Relation.relation_field',
-    'Relation.LogoImage.Variation.url',
-    'Relation.HeaderImage.Variation.url',
-    'Relation.OtherRelation.OtherRelationsRelation.*',
-]);
+//$query
+//    ->addSelect('field')
+//    ->addSelect('other_field')
+//    ->addSelect('Relation.field')
+//    ->addSelect('Relation.relation_field')
+//    ->addSelect('Relation.LogoImage.Variation.url')
+//    ->addSelect('Relation.HeaderImage.Variation.url')
+//    ->addSelect('Relation.OtherRelation.OtherRelationsRelation.*')
+//;
 
-$output = $select->getFields();
+$query->addSelect('field,other_field,Relation.field, '
+        . 'Relation.relation_field Relation.LogoImage.Variation.url '
+        . 'Relation.HeaderImage.Variation.url '
+        . 'Relation.OtherRelation.OtherRelationsRelation.*');
 
-$query = new Dsl\Query();
+$date = date('Y-m-d');
 $query
-    ->add('title="nekaj"')
-    ->add('id = [1,2,34]')
-    ->add('is_active!=1')
-    ->add('LogoImage.Variations.variation_id = 3')
-    ->add('published_at<='. date('Y-m-d'))
+    ->addQuery('title="nekaj"')
+    ->addQuery('id >= [1,2,34]')
+    ->addQuery('is_active!=1')
+    ->addQuery('LogoImage.Variations.variation_id < 3')
+    ->addQuery('published_at<='. $date)
 ;
 
-print_r($query->getFields());
-
-$solution = [
+$select = [
     'field',
     'other_field',
     'Relation.field',
@@ -71,10 +41,55 @@ $solution = [
     'Relation.OtherRelation.OtherRelationsRelation.*',
 ];
 
-if ($solution == $output) {
+$constraints = [
+    [
+        'field' => 'title',
+        'operator' => '=',
+        'value' => '"nekaj"'
+    ],
+    [
+        'field' => 'id',
+        'operator' => '>=',
+        'value' => [1,2,34]
+    ],
+    [
+        'field' => 'is_active',
+        'operator' => '!=',
+        'value' => '1'
+    ],
+    [
+        'field' => 'LogoImage.Variations.variation_id',
+        'operator' => '<',
+        'value' => '3'
+    ],
+    [
+        'field' => 'published_at',
+        'operator' => '<=',
+        'value' => $date
+    ],
+];
+
+$queryConditions = $query->getQuery()->getConditions();
+$validConstraints = true;
+foreach ($constraints as $key => $constraint) {
+    if (!isset($queryConditions[$key])) {
+        echo 'Unknown key '. $key .' in conditions'. PHP_EOL;
+        break;
+    }
+
+    if ($constraint !== $queryConditions[$key]->toArray()) {
+        echo 'Error for condition '. $key .PHP_EOL;
+        print_r($queryConditions[$key]);
+        $validConstraints = false;
+    }
+}
+
+if (
+    $select === $query->getSelect()->getFields() && $validConstraints
+) {
     echo 'Done, odi spat';
 } else {
+    print_r($query->getSelect()->getFields());
+    print_r($queryConditions);
     echo 'Keep working';
-print_r($output);
-//    print_r(array_diff($solution, $output));
 }

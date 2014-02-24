@@ -23,14 +23,19 @@ class Select implements \IteratorAggregate
 
     /**
      *
-     * @param string $item
+     * @param string $data
      *
      * @return \Anorgan\Dsl\Select
      */
-    public function add($item)
+    public function add($data)
     {
-        $this->_relations = null;
-        $this->_fields[] = $item;
+        $this->_relations   = null;
+
+        $fields = preg_split('/[, ]{1}/', $data, NULL, PREG_SPLIT_NO_EMPTY);
+
+        foreach ($fields as $field) {
+            $this->_fields[]    = $field;
+        }
 
         return $this;
     }
