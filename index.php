@@ -28,7 +28,7 @@ $query
     ->addQuery('id >= [1,2,34]')
     ->addQuery('is_active!=1')
     ->addQuery('LogoImage.Variations.variation_id < 3')
-    ->addQuery('published_at<='. $date)
+    ->addQuery('published_at<="'. $date .'"')
 ;
 
 $select = [
@@ -50,7 +50,7 @@ $constraints = [
     [
         'field' => 'id',
         'operator' => '>=',
-        'value' => [1,2,34]
+        'value' => ['1','2','34']
     ],
     [
         'field' => 'is_active',
@@ -65,7 +65,7 @@ $constraints = [
     [
         'field' => 'published_at',
         'operator' => '<=',
-        'value' => $date
+        'value' => '"'. $date .'"'
     ],
 ];
 

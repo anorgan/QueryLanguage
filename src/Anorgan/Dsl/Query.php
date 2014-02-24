@@ -96,10 +96,9 @@ class Query implements \IteratorAggregate
 
         $operators = array_map('preg_quote', $operators);
 
-        $regex = '/^(?P<field>\D[\w\.]+)\s?(?P<operator>(?|'. implode('|', $operators) .'))\s?(?P<quotes>["\']{0,1})(?P<value>[^\g{quotes}]+)\g{quotes}$/';
+        $regex = '/^(?P<field>\D[\w\.]+)\s?(?P<operator>(?|'. implode('|', $operators) .'))\s?(?P<value>.+)$/U';
         preg_match_all($regex, $field, $matches, PREG_SET_ORDER);
-print_r($regex);
-print_r($matches);
+
         $match = array_map('trim', $matches[0]);
 
         $condition = new Condition($match['field'], $match['operator'], $match['value']);

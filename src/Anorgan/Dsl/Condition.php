@@ -12,14 +12,20 @@ class Condition
     {
         $this->field = $field;
         $this->operator = $operator;
-        $this->value = $value;
+        $this->value = $this->normalizeValue($value);
     }
 
     public function normalizeValue($value)
     {
+        // Array, JSON notation
         if (preg_match('/^\[(.*),?\]$/', $value, $parts)) {
-            print_r($parts);
+            $parts = explode(',', $parts[1]);
+            array_walk($parts, function(&$item) {
+                trim($item, '"');
+            });
+            $value = $parts;
         }
+
         return $value;
     }
 
