@@ -9,7 +9,7 @@
     ],
     "require": {
         "maximebf/parsec": "1.0.0",
-        "ferno/loco": "dev-master"
+        "doctrine/lexer": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "*"
