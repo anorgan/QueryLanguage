@@ -85,6 +85,11 @@ class Query implements \IteratorAggregate
 
     protected function _processCondition($field)
     {
+
+        if ($field instanceof Condition) {
+            return $field;
+        }
+
         $operators = [
             '=',
             '!=',

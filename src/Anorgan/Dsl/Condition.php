@@ -18,7 +18,7 @@ class Condition
     public function normalizeValue($value)
     {
         // Array, JSON notation
-        if (preg_match('/^\[(.*),?\]$/', $value, $parts)) {
+        if (is_string($value) && preg_match('/^\[(.*),?\]$/', $value, $parts)) {
             $parts = explode(',', $parts[1]);
             array_walk($parts, function(&$item) {
                 trim($item, '"');
