@@ -76,7 +76,7 @@ class Query implements \IteratorAggregate
     /**
      *
      * @param type $data
-     * @return Compositeu
+     * @return Composite
      */
     public static function orX($data = null)
     {

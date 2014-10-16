@@ -6,7 +6,18 @@ use Anorgan\Dsl\Condition;
 use Anorgan\Dsl\Query;
 use Anorgan\Dsl\Select;
 use Doctrine\Common\Lexer\AbstractLexer;
+use Exception;
 
+/**
+ * <EBNF>
+ * Query                       ::= ConditionalTerm {"OR" ConditionalTerm}*
+ * ConditionalTerm             ::= ConditionalPrimary {"AND" ConditionalPrimary}*
+ * ConditionalPrimary          ::= ComparisonExpression | "(" Query ")"
+ * ComparisonExpression        ::= Field ComparisonOperator Value
+ * ComparisonOperator          ::= "=" | ":" | "<" | "<=" | "<>" | ">" | ">=" | "!="
+ * Value                       ::= Literal | "\"" Literal "\""
+ * Literal                     ::= string | char | integer | float | boolean
+ */
 class QueryParser
 {
     /**
@@ -33,138 +44,208 @@ class QueryParser
     public function parse($input)
     {
         $this->lexer->setInput($input);
-        $this->lexer->moveNext();
 
         $query = new Query;
 
-        while (null !== ($token = $this->lexer->lookahead)) {
+        $this->Query($query);
 
-            $peek = $this->lexer->glimpse();
-            switch ($peek['type']) {
-                case QueryLexer::T_NOT:
-                case QueryLexer::T_GREATER:
-                case QueryLexer::T_LOWER:
-                case QueryLexer::T_EQUAL:
-                    echo 'Adding condition'. PHP_EOL;
-                    $this->Condition($query);
+        return $query;
+    }
 
-                    $this->lexer->moveNext();
+    /**
+     *
+     * @param int $token
+     * @throws Exception
+     */
+    public function match($token)
+    {
+        $lookaheadType = $this->lexer->lookahead['type'];
 
-                    print_r($this->lexer->token);
+        // short-circuit on first condition, usually types match
+        if ($lookaheadType !== $token && $token !== QueryLexer::T_STRING && $lookaheadType <= QueryLexer::T_STRING) {
+            throw new Exception('Error matching token, expecting '. $this->lexer->getLiteral($token));
+        }
 
-                    break;
+        $this->lexer->moveNext();
+    }
 
-                case QueryLexer::T_AND:
-                    echo 'Adding composite AND'. PHP_EOL;
-                    $this->CompositeAnd($query);
+    /**
+     * Query                       ::= ConditionalTerm {"OR" ConditionalTerm}*
+     * Create OR parts
+     */
+    public function Query(Query $query)
+    {
+        $this->lexer->moveNext();
 
-                    $this->lexer->moveNext();
+        $query->add($query->orX($this->ConditionalTerm($query)));
+        while ($this->lexer->isNextToken(QueryLexer::T_OR)) {
+            $this->match(QueryLexer::T_OR);
 
-                    break;
-
-                case QueryLexer::T_OR:
-                    echo 'Adding composite OR'. PHP_EOL;
-                    $this->CompositeOr($query);
-
-                    $this->lexer->moveNext();
-
-                    break;
-
-                default:
-                    $this->lexer->moveNext();
-
-            }
+            $query->add($query->orX($this->ConditionalTerm($query)));
         }
 
         return $query;
     }
 
-    protected function Condition(Query $query)
+    /**
+     * ConditionalTerm             ::= ConditionalPrimary {"AND" ConditionalPrimary}*
+     * Create AND parts
+     */
+    public function ConditionalTerm(Query $query)
     {
-        // Field
-        $field = $this->lexer->lookahead['value'];
+        $composite = $query->andX($this->ConditionalPrimary($query));
+        while ($this->lexer->isNextToken(QueryLexer::T_AND)) {
+            $this->match(QueryLexer::T_AND);
 
-        // Operator
-        $this->lexer->moveNext();
+            $composite->add($this->ConditionalPrimary($query));
+        }
 
-        switch ($this->lexer->token['value']) {
-            // !=
-            case QueryLexer::T_NOT && $this->lexer->isNextToken(QueryLexer::T_EQUAL):
-                $this->lexer->moveNext();
-                $operator = '!=';
+        return $composite;
+    }
 
-                break;
+    /**
+     * ConditionalPrimary          ::= ComparisonExpression | "(" Query ")"
+     * Create condition or composite (another Query)
+     */
+    public function ConditionalPrimary(Query $query)
+    {
+        if (!$this->lexer->isNextToken(QueryLexer::T_OPEN_PARENTHESIS)) {
+            return $this->ComparisonExpression();
+        }
 
-            // >= or <=
-            case $this->lexer->isNextToken(QueryLexer::T_GREATER):
-            case $this->lexer->isNextToken(QueryLexer::T_LOWER):
-                $operator = $this->lexer->lookahead['value'];
-                $this->lexer->moveNext();
+        $this->match(QueryLexer::T_OPEN_PARENTHESIS);
+        $query = $this->Query($query);
+        $this->match(QueryLexer::T_CLOSE_PARENTHESIS);
+
+        return $query;
+    }
+
+    /**
+     * ComparisonExpression        ::= Field ComparisonOperator Value
+     * Create condition
+     */
+    public function ComparisonExpression()
+    {
+        $field      = $this->Field();
+        $operator   = $this->ComparisonOperator();
+        $value      = $this->Value();
+
+        return new Condition($field, $operator, $value);
+    }
+
+    /**
+     * Field                        ::= Literal [ ("." Literal)* ]
+     *
+     * @return string
+     */
+    public function Field()
+    {
+        $this->match(QueryLexer::T_STRING);
+
+        $field = $this->lexer->token['value'];
+
+        while ($this->lexer->isNextToken(QueryLexer::T_DOT)) {
+            $this->match(QueryLexer::T_DOT);
+            $this->match(QueryLexer::T_STRING);
+            $field .= '.'. $this->lexer->token['value'];
+        }
+
+        return $field;
+    }
+
+    /**
+     * ComparisonOperator ::= "=" | ":" | "<" | "<=" | "<>" | ">" | ">=" | "!="
+     *
+     * @return string
+     */
+    public function ComparisonOperator()
+    {
+        switch ($this->lexer->lookahead['value']) {
+            case '=':
+                $this->match(QueryLexer::T_EQUAL);
+
+                return '=';
+
+            case '<':
+                $this->match(QueryLexer::T_LOWER);
+                $operator = '<';
 
                 if ($this->lexer->isNextToken(QueryLexer::T_EQUAL)) {
-                    $operator .= $this->lexer->lookahead['value'];
-                    $this->lexer->moveNext();
+                    $this->match(QueryLexer::T_EQUAL);
+                    $operator .= '=';
+                } else if ($this->lexer->isNextToken(QueryLexer::T_GREATER)) {
+                    $this->match(QueryLexer::T_GREATER);
+                    $operator .= '>';
                 }
 
-                break;
+                return $operator;
+
+            case '>':
+                $this->match(QueryLexer::T_GREATER);
+                $operator = '>';
+
+                if ($this->lexer->isNextToken(QueryLexer::T_EQUAL)) {
+                    $this->match(QueryLexer::T_EQUAL);
+                    $operator .= '=';
+                }
+
+                return $operator;
+
+            case '!':
+                $this->match(QueryLexer::T_NOT);
+                $this->match(QueryLexer::T_EQUAL);
+
+                return '<>';
 
             default:
-                $operator = $this->lexer->lookahead['value'];
-
+                throw new Exception('Error matching comparison opeartor, expecting one of: =, :, <, <=, <>, >, >=, !=');
         }
-
-        // Value
-        $this->lexer->moveNext();
-
-        $value = $this->Value();
-
-        $query->add(new Condition($field, $operator, $value));
     }
 
-    protected function CompositeAnd(Query $query)
+    /**
+     * Value                       ::= Literal | "\"" Literal "\""
+     * Get literal
+     */
+    public function Value()
     {
-        $query->andX();
-    }
+        switch ($this->lexer->lookahead['type']) {
+            case QueryLexer::T_STRING:
+                $this->match(QueryLexer::T_STRING);
+                return $this->lexer->token['value'];
 
-    protected function CompositeOr(Query $query)
-    {
-        $query->orX();
-    }
+            case QueryLexer::T_INTEGER:
+            case QueryLexer::T_FLOAT:
+                $this->match(
+                    $this->lexer->isNextToken(QueryLexer::T_INTEGER) ? QueryLexer::T_INTEGER : QueryLexer::T_FLOAT
+                );
+                return $this->lexer->token['value'];
 
-    protected function Value()
-    {
-        $value = array($this->lexer->lookahead['value']);
-
-        $breakWhile = false;
-        while (true) {
-            switch (true) {
-                case $this->lexer->isNextToken(QueryLexer::T_SINGLE_QUOTE):
-                case $this->lexer->isNextToken(QueryLexer::T_DOUBLE_QUOTE):
-                    $quote = $this->lexer->lookahead;
-                    $this->lexer->moveNext();
-                    $breakWhile = true;
-
-                    break;
-
-                case $this->lexer->isNextToken(QueryLexer::T_STRING):
-                case $this->lexer->isNextToken(QueryLexer::T_INTEGER):
-                case $this->lexer->isNextToken(QueryLexer::T_FLOAT):
-                    $this->lexer->moveNext();
-                    $value[] = $this->lexer->lookahead['value'];
-
-                    break;
-
-                default:
-                    $breakWhile = true;
-
-                    break;
-            }
-
-            if ($breakWhile) {
-                break;
-            }
+            default:
+                throw new Exception('Error, expecting Literal');
         }
+    }
 
-        return implode(' ', $value);
+    /**
+     * Literal                     ::= string | char | integer | float | boolean
+     * Get terminal
+     * @deprecated since always
+     */
+    public function Literal()
+    {
+        switch ($this->lexer->lookahead['type']) {
+            case QueryLexer::T_STRING:
+                $this->match(QueryLexer::T_STRING);
+                return $this->lexer->token['value'];
+
+            case QueryLexer::T_INTEGER:
+            case QueryLexer::T_FLOAT:
+                $this->match(
+                    $this->lexer->isNextToken(QueryLexer::T_INTEGER) ? QueryLexer::T_INTEGER : QueryLexer::T_FLOAT
+                );
+                return $this->lexer->token['value'];
+
+            default:
+                throw new Exception('Error, expecting Literal');
+        }
     }
 }

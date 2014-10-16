@@ -80,7 +80,7 @@ $queryConditions = $query->getQuery()->getConditions();
 $validConstraints = true;
 foreach ($constraints as $key => $constraint) {
     if (!isset($queryConditions[$key])) {
-        echo 'Unknown key '. $key .' in conditions'. PHP_EOL;
+        echo __FILE__ .': Unknown key '. $key .' in conditions'. PHP_EOL;
         $validConstraints = false;
         break;
     }

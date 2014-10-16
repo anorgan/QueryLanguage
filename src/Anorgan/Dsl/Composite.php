@@ -152,6 +152,20 @@ class Composite implements Countable
         return '(' . implode(') ' . $this->type . ' (', $this->parts) . ')';
     }
 
+    public function toArray()
+    {
+        $cnt = count($this->parts);
+        if ($cnt === 0) {
+            return array();
+        }
+
+        if ($cnt === 1) {
+            return $this->parts[0];
+        }
+
+        return $this->parts;
+    }
+
     /**
      * Returns the type of this composite expression (AND/OR).
      *

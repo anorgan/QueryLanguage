@@ -10,6 +10,7 @@ class QueryLexer extends AbstractLexer
     const T_EQUAL               = 1;
     const T_NOT                 = 2;
     const T_GREATER             = 3;
+    const T_DOT                 = 4;
     const T_LOWER               = 5;
     const T_SINGLE_QUOTE        = 6;
     const T_DOUBLE_QUOTE        = 7;
@@ -29,10 +30,10 @@ class QueryLexer extends AbstractLexer
     protected function getCatchablePatterns()
     {
         return array(
-            '[a-zA-Z_\\\][a-zA-Z0-9_\.]*[a-z0-9_]{1}',
-            '(?:[0-9]+(?:[\.][0-9]+)*)(?:e[+-]?[0-9]+)?',
-            "'(?:[^']|'')*'",
-            '\?[0-9]*|:[a-z]{1}[a-z0-9_]{0,}'
+            '[a-zA-Z][a-zA-Z0-9_\.]*[a-z0-9_]{1}',
+            '[\!\=><\[\]\"]{1}',
+            '"(?:[^"]|\\\\")*"',
+            '(AND|OR)'
         );
     }
 
@@ -64,10 +65,10 @@ class QueryLexer extends AbstractLexer
                 return self::T_INTEGER;
 
 //            // Recognize quoted strings
-//            case ($value[0] === "'"):
-//                $value = str_replace("''", "'", substr($value, 1, strlen($value) - 2));
-//
-//                return self::T_STRING;
+            case ($value[0] === '"'):
+                $value = str_replace('""', '"', substr($value, 1, strlen($value) - 2));
+
+                return self::T_STRING;
 
             case ($value === '"'):
                 return self::T_DOUBLE_QUOTE;
@@ -81,6 +82,9 @@ class QueryLexer extends AbstractLexer
             case ($value === ')'):
                 return self::T_CLOSE_PARENTHESIS;
 
+            case ($value === '.'):
+                return self::T_DOT;
+
             case ($value === '!'):
                 return self::T_NOT;
 
@@ -92,6 +96,12 @@ class QueryLexer extends AbstractLexer
 
             case ($value === '<'):
                 return self::T_LOWER;
+
+            case ($value === 'AND'):
+                return self::T_AND;
+
+            case ($value === 'OR'):
+                return self::T_OR;
 
             case is_string($value):
                 return self::T_STRING;
