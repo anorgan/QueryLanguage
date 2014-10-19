@@ -1,6 +1,6 @@
 <?php
 
-namespace Anorgan\Dsl;
+namespace Anorgan\QueryLanguage;
 
 class Query implements \IteratorAggregate
 {
@@ -26,7 +26,7 @@ class Query implements \IteratorAggregate
      *
      * @param string $condition
      *
-     * @return \Anorgan\Dsl\Select
+     * @return \Anorgan\QueryLanguage\Select
      */
     public function add($condition)
     {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Anorgan\Dsl\Parser;
+namespace Anorgan\QueryLanguage\Parser;
 
-use Anorgan\Dsl\Select;
+use Anorgan\QueryLanguage\Select;
 use Doctrine\Common\Lexer\AbstractLexer;
 
 

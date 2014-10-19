@@ -1,6 +1,6 @@
 <?php
 
-namespace Anorgan\Dsl;
+namespace Anorgan\QueryLanguage;
 
 use Countable;
 
@@ -72,7 +72,7 @@ class Composite implements Countable
      *
      * @param array $parts
      *
-     * @return \Anorgan\Dsl\Composite
+     * @return \Anorgan\QueryLanguage\Composite
      */
     public function addParts(array $parts = array())
     {
@@ -86,7 +86,7 @@ class Composite implements Countable
     /**
      *
      * @param self $data
-     * @return \Anorgan\Dsl\Composite
+     * @return \Anorgan\QueryLanguage\Composite
      */
     public function add($data)
     {
@@ -100,7 +100,7 @@ class Composite implements Countable
     /**
      *
      * @param type $data
-     * @return \Anorgan\Dsl\Composite
+     * @return \Anorgan\QueryLanguage\Composite
      */
     public function andX($data = null)
     {
@@ -113,7 +113,7 @@ class Composite implements Countable
     /**
      *
      * @param type $data
-     * @return \Anorgan\Dsl\Composite
+     * @return \Anorgan\QueryLanguage\Composite
      */
     public function orX($data = null)
     {

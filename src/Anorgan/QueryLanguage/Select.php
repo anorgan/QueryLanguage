@@ -1,6 +1,6 @@
 <?php
 
-namespace Anorgan\Dsl;
+namespace Anorgan\QueryLanguage;
 
 class Select implements \IteratorAggregate
 {
@@ -25,7 +25,7 @@ class Select implements \IteratorAggregate
      *
      * @param string $data
      *
-     * @return \Anorgan\Dsl\Select
+     * @return \Anorgan\QueryLanguage\Select
      */
     public function add($data)
     {
@@ -61,7 +61,7 @@ class Select implements \IteratorAggregate
      *
      * @param array $data
      *
-     * @return \Anorgan\Dsl\Select
+     * @return \Anorgan\QueryLanguage\Select
      */
     public function addRelation(array $data)
     {

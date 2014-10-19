@@ -1,10 +1,10 @@
 <?php
 
-namespace Anorgan\Dsl\Parser;
+namespace Anorgan\QueryLanguage\Parser;
 
-use Anorgan\Dsl\Condition;
-use Anorgan\Dsl\Query;
-use Anorgan\Dsl\Select;
+use Anorgan\QueryLanguage\Condition;
+use Anorgan\QueryLanguage\Query;
+use Anorgan\QueryLanguage\Select;
 use Doctrine\Common\Lexer\AbstractLexer;
 use Exception;
 

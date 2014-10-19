@@ -1,6 +1,6 @@
 <?php
 
-namespace Anorgan\Dsl;
+namespace Anorgan\QueryLanguage;
 
 class Condition
 {

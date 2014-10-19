@@ -1,6 +1,6 @@
 <?php
 
-namespace Anorgan\Dsl\Parser;
+namespace Anorgan\QueryLanguage\Parser;
 
 use Doctrine\Common\Lexer\AbstractLexer;
 
