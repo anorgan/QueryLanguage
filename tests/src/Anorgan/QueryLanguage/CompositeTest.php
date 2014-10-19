@@ -148,41 +148,45 @@ class CompositeTest extends \PHPUnit_Framework_TestCase
      */
     public function testAndX()
     {
-        $composite = new Composite(Composite::TYPE_OR, new Condition('field', '=', 'value'));
-        $this->object->andX($composite);
+        $condition = new Condition('field', '=', 'value');
+        $composite = $this->object->andX($condition);
+        
+        $this->assertEquals(1, $this->object->count());
+        $this->assertEquals(Composite::TYPE_AND, $composite->getType());
+        $this->assertSame($this->object, $composite->back());
     }
 
     /**
      * @covers Anorgan\QueryLanguage\Composite::orX
-     * @todo   Implement testOrX().
      */
     public function testOrX()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $condition = new Condition('field', '=', 'value');
+        $composite = $this->object->orX($condition);
+        
+        $this->assertEquals(1, $this->object->count());
+        $this->assertEquals(Composite::TYPE_OR, $composite->getType());
+        $this->assertSame($this->object, $composite->back());
     }
+
 
     /**
      * @covers Anorgan\QueryLanguage\Composite::count
-     * @todo   Implement testCount().
      */
     public function testCount()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $this->assertEquals(0, $this->object->count());
+        $this->object->addParts([
+            new Condition('field', '=', 'value'),
+        ]);
+        $this->assertEquals(1, $this->object->count());
     }
 
     /**
      * @covers Anorgan\QueryLanguage\Composite::__toString
-     * @todo   Implement test__toString().
      */
     public function test__toString()
     {
-        // Remove the following lines when you implement this test.
         $this->markTestIncomplete(
                 'This test has not been implemented yet.'
         );
