@@ -18,12 +18,11 @@ class Condition
     public function normalizeValue($value)
     {
         // Array, JSON notation
-        if (is_string($value) && preg_match('/^\[(.*),?\]$/', $value, $parts)) {
-            $parts = explode(',', $parts[1]);
-            array_walk($parts, function(&$item) {
-                trim($item, '"');
-            });
-            $value = $parts;
+        if (is_string($value) && preg_match('/^\[(.*),?\]$/', $value)) {
+            $normalized = json_decode($value, true);
+            if (is_array($normalized)) {
+                $value = $normalized;
+            }
         }
 
         return $value;

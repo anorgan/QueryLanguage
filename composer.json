@@ -1,18 +1,14 @@
 {
-    "name": "vendor/d-s-l",
-    "description": "Description of project DSL.",
+    "name": "anorgan/query-language",
+    "description": "One Query to Rule Them All",
     "authors": [
         {
-            "name": "anorgan",
-            "email": "your@email.here"
+            "name": "Marin Crnković",
+            "email": "marin.crnkovic@gmail.com"
         }
     ],
     "require": {
-        "maximebf/parsec": "1.0.0",
         "doctrine/lexer": "dev-master"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "*"
     },
     "autoload": {
         "psr-0": {"": "src"}

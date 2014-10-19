@@ -24,6 +24,10 @@ class Composite implements Countable
      */
     private $parts = array();
 
+    /**
+     *
+     * @var Composite
+     */
     private $parent;
 
     /**
@@ -31,13 +35,20 @@ class Composite implements Countable
      *
      * @param string $type  Instance type of composite expression.
      * @param array  $parts Composition of expressions to be joined on composite expression.
+     * @param Composite $parent Composite this is child of
      */
-    public function __construct($type, $parts = array(), Composite $parent = null)
+    public function __construct($type, $parts = null, Composite $parent = null)
     {
         $this->type = $type;
         $this->parent = $parent;
 
-        $this->addParts((array) $parts);
+        if (null !== $parts) {
+            if (is_array($parts)) {
+                $this->addParts($parts);
+            } else {
+                $this->add($parts);
+            }
+        }
     }
 
     public function back()
@@ -85,21 +96,27 @@ class Composite implements Countable
 
     /**
      *
-     * @param self $data
+     * @param Condition|Composite $data
      * @return \Anorgan\QueryLanguage\Composite
      */
     public function add($data)
     {
-        if ( ! empty($data) || ($data instanceof self && $data->count() > 0)) {
-            $this->parts[] = $data;
+        if (!($data instanceof Composite) && !($data instanceof Condition)) {
+            throw new \InvalidArgumentException('Error adding data, expecting composite or condition, got '. gettype($data));
         }
+
+        if ($data instanceof \Anorgan\QueryLanguage\Composite && $data->count() == 0) {
+            return $this;
+        }
+
+        $this->parts[] = $data;
 
         return $this;
     }
 
     /**
      *
-     * @param type $data
+     * @param Condition|Composite $data
      * @return \Anorgan\QueryLanguage\Composite
      */
     public function andX($data = null)
@@ -112,7 +129,7 @@ class Composite implements Countable
 
     /**
      *
-     * @param type $data
+     * @param Condition|Composite $data
      * @return \Anorgan\QueryLanguage\Composite
      */
     public function orX($data = null)

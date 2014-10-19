@@ -37,9 +37,10 @@ class ConditionTest extends \PHPUnit_Framework_TestCase
      */
     public function testSettingValueViaContructorNormalizesIt()
     {
-        $date = new \DateTime;
         $condition = new Condition('field', '=', 'value');
         $this->assertEquals('value', $condition->toArray()['value']);
+        $condition = new Condition('field', '=', '[1,2,3]');
+        $this->assertEquals([1,2,3], $condition->toArray()['value']);
     }
     
     /**
@@ -50,41 +51,47 @@ class ConditionTest extends \PHPUnit_Framework_TestCase
         $date = new \DateTime;
         $this->assertEquals($date, $this->object->normalizeValue($date));
     }
+    
+    /**
+     * @covers Anorgan\QueryLanguage\Condition::normalizeValue
+     */
+    public function testNormalizeValueConvertsJsonToArray()
+    {
+        $condition = new Condition('field', '=', '[1, "test", NULL]');
+        $this->assertEquals([1, 'test', null], $condition->toArray()['value']);
+    }
 
     /**
      * @covers Anorgan\QueryLanguage\Condition::denormalizeValue
-     * @todo   Implement testDenormalizeValue().
      */
     public function testDenormalizeValue()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $condition = new Condition('field', '=', '[1,2,3]');
+        $this->assertEquals('[1,2,3]', $condition->denormalizeValue([1,2,3]));
+        $condition = new Condition('field', '=', '[1,2,3]');
+        $this->assertEquals('test', $condition->denormalizeValue('test'));
     }
 
     /**
      * @covers Anorgan\QueryLanguage\Condition::toArray
-     * @todo   Implement testToArray().
      */
     public function testToArray()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $condition = new Condition('field', '=', '[1,2,3]');
+        $this->assertEquals([
+            'field'     => 'field', 
+            'operator'  => '=',
+            'value'     => [1,2,3]
+        ], $condition->toArray());
     }
 
     /**
      * @covers Anorgan\QueryLanguage\Condition::__toString
-     * @todo   Implement test__toString().
      */
     public function test__toString()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $condition = new Condition('field', '=', '[1,2,3]');
+        $this->assertEquals('field=[1,2,3]', (string) $condition);
     }
 
 }
