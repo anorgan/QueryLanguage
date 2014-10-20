@@ -169,6 +169,10 @@ class Composite implements Countable
         return '(' . implode(') ' . $this->type . ' (', $this->parts) . ')';
     }
 
+    /**
+     * 
+     * @return mixed
+     */
     public function toArray()
     {
         $cnt = count($this->parts);

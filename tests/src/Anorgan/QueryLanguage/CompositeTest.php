@@ -185,35 +185,52 @@ class CompositeTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers Anorgan\QueryLanguage\Composite::__toString
      */
-    public function test__toString()
+    public function testToString()
     {
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $this->assertEquals('', (string) $this->object);
+
+        $conditionA = new Condition('field', '=', 'value');
+        $conditionB = new Condition('another_field', '>', 'another value');
+
+        $this->object->add($conditionA);
+        $this->assertEquals('field=value', (string) $this->object);
+
+        $this->object->add($conditionB);
+        $this->assertEquals('(field=value) AND (another_field>another value)', (string) $this->object);
+
+        $composite = new Composite(Composite::TYPE_OR, [$conditionA, $conditionB]);
+        $this->assertEquals('(field=value) OR (another_field>another value)', (string) $composite);
+
+        $composite = new Composite(Composite::TYPE_OR, [$conditionA, $conditionB, $this->object]);
+        $this->assertEquals('(field=value) OR (another_field>another value) OR ((field=value) AND (another_field>another value))', (string) $composite);
     }
 
     /**
      * @covers Anorgan\QueryLanguage\Composite::toArray
-     * @todo   Implement testToArray().
      */
     public function testToArray()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $this->assertEmpty($this->object->toArray());
+        
+        $condition = new Condition('field', '=', 'value');
+        $this->object->add($condition);
+        $this->assertEquals($condition, $this->object->toArray());
+        
+        $condition2 = new Condition('field', '=', 'value');
+        $this->object->add($condition2);
+        $this->assertEquals([$condition, $condition2], $this->object->toArray());
     }
 
     /**
      * @covers Anorgan\QueryLanguage\Composite::getType
-     * @todo   Implement testGetType().
      */
     public function testGetType()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $composite = new Composite(Composite::TYPE_AND);
+        $this->assertEquals('AND', $composite->getType());
+        
+        $composite = new Composite(Composite::TYPE_OR);
+        $this->assertEquals('OR', $composite->getType());
     }
 
 }

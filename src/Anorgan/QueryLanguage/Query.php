@@ -35,6 +35,10 @@ class Query implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * 
+     * @return array
+     */
     public function getConditions()
     {
         return $this->_conditions;

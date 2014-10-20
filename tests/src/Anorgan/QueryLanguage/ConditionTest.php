@@ -58,7 +58,8 @@ class ConditionTest extends \PHPUnit_Framework_TestCase
     public function testNormalizeValueConvertsJsonToArray()
     {
         $condition = new Condition('field', '=', '[1, "test", NULL]');
-        $this->assertEquals([1, 'test', null], $condition->toArray()['value']);
+        $parts = $condition->toArray();
+        $this->assertEquals(array(1, 'test', null), $parts['value']);
     }
 
     /**

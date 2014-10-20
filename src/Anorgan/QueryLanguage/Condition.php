@@ -18,7 +18,7 @@ class Condition
     public function normalizeValue($value)
     {
         // Array, JSON notation
-        if (is_string($value) && preg_match('/^\[(.*),?\]$/', $value)) {
+        if (is_string($value)) {
             $normalized = json_decode($value, true);
             if (is_array($normalized)) {
                 $value = $normalized;
@@ -43,7 +43,6 @@ class Condition
             'field' => $this->field,
             'operator' => $this->operator,
             'value' => $this->value,
-
         );
     }
 
