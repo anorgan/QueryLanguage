@@ -51,6 +51,11 @@ class Composite implements Countable
         }
     }
 
+    /**
+     * Returns parent if any, or self if no parent
+     *
+     * @return \Anorgan\QueryLanguage\Composite
+     */
     public function back()
     {
         if (null === $this->parent) {
@@ -60,11 +65,20 @@ class Composite implements Countable
         return $this->parent;
     }
 
+    /**
+     * 
+     * @return boolean
+     */
     public function hasParent()
     {
         return null !== $this->parent;
     }
 
+    /**
+     * Returns leaf parent or self if no parents
+     *
+     * @return \Anorgan\QueryLanguage\Composite
+     */
     public function end()
     {
         if (!$this->hasParent()) {
@@ -97,7 +111,9 @@ class Composite implements Countable
     /**
      *
      * @param Condition|Composite $data
+     *
      * @return \Anorgan\QueryLanguage\Composite
+     * @throws \InvalidArgumentException
      */
     public function add($data)
     {
@@ -117,6 +133,7 @@ class Composite implements Countable
     /**
      *
      * @param Condition|Composite $data
+     * 
      * @return \Anorgan\QueryLanguage\Composite
      */
     public function andX($data = null)
@@ -130,6 +147,7 @@ class Composite implements Countable
     /**
      *
      * @param Condition|Composite $data
+     *
      * @return \Anorgan\QueryLanguage\Composite
      */
     public function orX($data = null)
