@@ -1,6 +1,9 @@
 {
     "name": "anorgan/query-language",
+    "type": "library",
     "description": "One Query to Rule Them All",
+    "keywords": ["query", "DSL"],
+    "license": "MIT",
     "authors": [
         {
             "name": "Marin Crnković",

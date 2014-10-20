@@ -9,12 +9,12 @@ class Query
 
     /**
      *
-     * @return Dsl\Select
+     * @return QueryLanguage\Select
      */
     public function getSelect()
     {
         if (null === $this->_select) {
-            $this->_select = new Dsl\Select;
+            $this->_select = new QueryLanguage\Select;
         }
 
         return $this->_select;
@@ -22,25 +22,25 @@ class Query
 
     /**
      *
-     * @return Dsl\Query
+     * @return QueryLanguage\Query
      */
     public function getQuery()
     {
         if (null === $this->_query) {
-            $this->_query = new Dsl\Query;
+            $this->_query = new QueryLanguage\Query;
         }
 
         return $this->_query;
     }
 
-    public function setSelect(Dsl\Select $select)
+    public function setSelect(QueryLanguage\Select $select)
     {
         $this->_select = $select;
 
         return $this;
     }
 
-    public function setQuery(Dsl\Query $query)
+    public function setQuery(QueryLanguage\Query $query)
     {
         $this->_query = $query;
 
