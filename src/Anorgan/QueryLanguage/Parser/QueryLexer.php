@@ -68,7 +68,9 @@ class QueryLexer extends AbstractLexer
             case ($value[0] === '"'):
                 $value = str_replace('""', '"', substr($value, 1, strlen($value) - 2));
 
-                return self::T_STRING;
+                if (strlen($value)) {
+                    return self::T_STRING;
+                }
 
             case ($value === '"'):
                 return self::T_DOUBLE_QUOTE;
