@@ -32,7 +32,7 @@ class QueryLexer extends AbstractLexer
         return array(
             '[a-zA-Z][a-zA-Z0-9_\.]*[a-z0-9_]{1}',
             '[\!\=><\[\]\"]{1}',
-            '"(?:[^"]|\\\\")*"',
+            '"(?:[^"]|\\")*"', // Quoted strings
             '(AND|OR)'
         );
     }
@@ -64,11 +64,12 @@ class QueryLexer extends AbstractLexer
 
                 return self::T_INTEGER;
 
-//            // Recognize quoted strings
+            // Recognize quoted strings
             case ($value[0] === '"'):
-                $value = str_replace('""', '"', substr($value, 1, strlen($value) - 2));
+                $testValue = str_replace('""', '"', substr($value, 1, strlen($value) - 2));
 
-                if (strlen($value)) {
+                if (strlen($testValue)) {
+                    $value = $testValue;
                     return self::T_STRING;
                 }
 

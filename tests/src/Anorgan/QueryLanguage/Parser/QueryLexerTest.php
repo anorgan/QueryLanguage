@@ -141,4 +141,137 @@ class QueryLexerTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertTrue($this->object->isA('"some quoted string"', QueryLexer::T_STRING));
     }
+    
+    /**
+     * 
+     * @param string $input
+     * @param array $expectedTokens
+     * 
+     * @dataProvider dataProviderLexerTokens
+     */
+    public function testLexerTokens($input, $expectedTokens)
+    {
+        $this->object->setInput($input);
+        $this->object->moveNext();
+        foreach ($expectedTokens as $tokenValue) {
+            $this->object->moveNext();
+            $this->assertEquals($tokenValue, $this->object->token['value']);
+        }
+
+        $this->assertFalse($this->object->moveNext());
+    }
+    
+    /**
+     * Data provider for testLexerTokens
+     *
+     * @return array
+     */
+    public function dataProviderLexerTokens()
+    {
+        $data = [];
+
+        $data['simple query'] = [
+            'input'     => 'a=b',
+            'tokens'    => [
+                'a',
+                '=',
+                'b'
+            ]
+        ];
+
+        $data['simple query, longer variables'] = [
+            'input'     => 'field:value',
+            'tokens'    => [
+                'field',
+                ':',
+                'value'
+            ]
+        ];
+
+        $data['simple query, >= operator and spaces'] = [
+            'input'     => 'field >= value',
+            'tokens'    => [
+                'field',
+                '>',
+                '=',
+                'value'
+            ]
+        ];
+
+        $data['simple query, != operator and quotes'] = [
+            'input'     => 'field != "value with space"',
+            'tokens'    => [
+                'field',
+                '!',
+                '=',
+                '"',
+                'value',
+                'with',
+                'space',
+                '"',
+            ]
+        ];
+
+        $data['simple query, namespaced field'] = [
+            'input'     => 'some.namespaced.field != "value with space"',
+            'tokens'    => [
+                'some.namespaced.field',
+                '!',
+                '=',
+                '"',
+                'value',
+                'with',
+                'space',
+                '"',
+            ]
+        ];
+
+        $data['complex query'] = [
+            'input'     => 'field: value AND is_active != 1',
+            'tokens'    => [
+                'field',
+                ':',
+                'value',
+                'AND',
+                'is_active',
+                '!',
+                '=',
+                '1',
+            ]
+        ];
+
+        $data['complex query, composites'] = [
+            'input'     => '(field: value AND is_active != 1) OR (field != "quoted string" AND is_active = 1)',
+            'tokens'    => [
+                '(',
+                'field',
+                ':',
+                'value',
+                'AND',
+                'is_active',
+                '!',
+                '=',
+                '1',
+                ')',
+                
+                'OR',
+                
+                '(',
+                'field',
+                '!',
+                '=',
+                '"',
+                'quoted',
+                'string',
+                '"',
+                'AND',
+                'is_active',
+                '=',
+                '1',
+                ')',
+            ]
+        ];
+
+        return $data;
+    }
 }

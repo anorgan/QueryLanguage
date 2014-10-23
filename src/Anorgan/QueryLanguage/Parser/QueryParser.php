@@ -154,7 +154,7 @@ class QueryParser
     }
 
     /**
-     * ComparisonOperator ::= "=" | ":" | "<" | "<=" | "<>" | ">" | ">=" | "!="
+     * ComparisonOperator ::= "=" | ":" | "<" | "<=" | ">" | ">=" | "!="
      *
      * @return string
      */
@@ -195,7 +195,7 @@ class QueryParser
                 $this->match(QueryLexer::T_NOT);
                 $this->match(QueryLexer::T_EQUAL);
 
-                return '<>';
+                return '!=';
 
             default:
                 throw new Exception('Error matching comparison opeartor, expecting one of: =, :, <, <=, <>, >, >=, !=');
@@ -208,6 +208,11 @@ class QueryParser
      */
     public function Value()
     {
+        if ($this->lexer->lookahead['type'] === QueryLexer::T_DOUBLE_QUOTE) {
+            // Quoted string
+            $this->lexer->moveNext();
+        }
+
         switch ($this->lexer->lookahead['type']) {
             case QueryLexer::T_STRING:
                 $this->match(QueryLexer::T_STRING);
