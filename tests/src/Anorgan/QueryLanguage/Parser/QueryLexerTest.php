@@ -198,6 +198,16 @@ class QueryLexerTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
+        $data['simple query, >= operator and spaces and numbers'] = [
+            'input'     => 'field >= 123value',
+            'tokens'    => [
+                'field',
+                '>',
+                '=',
+                '123value'
+            ]
+        ];
+
         $data['simple query, != operator and quotes'] = [
             'input'     => 'field != "value with space"',
             'tokens'    => [

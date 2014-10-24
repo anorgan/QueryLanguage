@@ -30,7 +30,7 @@ class QueryLexer extends AbstractLexer
     protected function getCatchablePatterns()
     {
         return array(
-            '[a-zA-Z][a-zA-Z0-9_\.]*[a-z0-9_]{1}',
+            '[a-zA-Z0-9][a-zA-Z0-9_\.]*[a-z0-9_]{1}',
             '[\!\=><\[\]\"]{1}',
             '"(?:[^"]|\\")*"', // Quoted strings
             '(AND|OR)'

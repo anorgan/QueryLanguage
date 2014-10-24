@@ -118,7 +118,7 @@ class Composite implements Countable
     public function add($data)
     {
         if (!($data instanceof Composite) && !($data instanceof Condition)) {
-            throw new \InvalidArgumentException('Error adding data, expecting composite or condition, got '. gettype($data));
+            throw new \InvalidArgumentException('Error adding data, expecting composite or condition, got '. (is_object($data) ? get_class($data) : gettype($data)));
         }
 
         if ($data instanceof \Anorgan\QueryLanguage\Composite && $data->count() == 0) {

@@ -14,7 +14,8 @@ use Exception;
  * ConditionalTerm             ::= ConditionalPrimary {"AND" ConditionalPrimary}*
  * ConditionalPrimary          ::= ComparisonExpression | "(" Query ")"
  * ComparisonExpression        ::= Field ComparisonOperator Value
- * ComparisonOperator          ::= "=" | ":" | "<" | "<=" | "<>" | ">" | ">=" | "!="
+ * ComparisonOperator          ::= "=" | ":" | "<" | "<=" | ">" | ">=" | "!="
+ * Field                       ::= Literal
  * Value                       ::= Literal | "\"" Literal "\""
  * Literal                     ::= string | char | integer | float | boolean
  */
@@ -198,7 +199,7 @@ class QueryParser
                 return '!=';
 
             default:
-                throw new Exception('Error matching comparison opeartor, expecting one of: =, :, <, <=, <>, >, >=, !=');
+                throw new Exception('Error matching comparison opeartor, expecting one of: =, :, <, <=, >, >=, !=, got '. $this->lexer->lookahead['value']);
         }
     }
 
@@ -208,32 +209,35 @@ class QueryParser
      */
     public function Value()
     {
-        if ($this->lexer->lookahead['type'] === QueryLexer::T_DOUBLE_QUOTE) {
-            // Quoted string
+        $values = [];
+
+        if ($this->lexer->isNextToken(QueryLexer::T_DOUBLE_QUOTE)) {
             $this->lexer->moveNext();
+
+            $startPosition = $this->lexer->token['position'];
+            while (true) {
+                if ($this->lexer->isNextToken(QueryLexer::T_DOUBLE_QUOTE) && $this->lexer->token['value'] !== '\\') {
+                    // Not escaped quote, stop
+                    $this->lexer->moveNext();
+                    $endPosition = $this->lexer->token['position'];
+                    break;
+                }
+
+                $this->lexer->moveNext();
+            }
+
+            $values[] = str_replace('\"', '"', substr($this->lexer->getInputUntilPosition($endPosition), $startPosition + 1));
+
+        } else {
+            $values[] = $this->Literal();
         }
 
-        switch ($this->lexer->lookahead['type']) {
-            case QueryLexer::T_STRING:
-                $this->match(QueryLexer::T_STRING);
-                return $this->lexer->token['value'];
-
-            case QueryLexer::T_INTEGER:
-            case QueryLexer::T_FLOAT:
-                $this->match(
-                    $this->lexer->isNextToken(QueryLexer::T_INTEGER) ? QueryLexer::T_INTEGER : QueryLexer::T_FLOAT
-                );
-                return $this->lexer->token['value'];
-
-            default:
-                throw new Exception('Error, expecting Literal');
-        }
+        return implode(' ', $values);
     }
 
     /**
      * Literal                     ::= string | char | integer | float | boolean
      * Get terminal
-     * @deprecated since always
      */
     public function Literal()
     {
@@ -250,7 +254,7 @@ class QueryParser
                 return $this->lexer->token['value'];
 
             default:
-                throw new Exception('Error, expecting Literal');
+                throw new Exception('Error, expecting Literal, got '. $this->lexer->token['value']);
         }
     }
 }
