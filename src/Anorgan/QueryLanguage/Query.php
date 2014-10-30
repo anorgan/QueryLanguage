@@ -47,6 +47,28 @@ class Query implements \IteratorAggregate
     {
         return (array) $this->_conditions;
     }
+    
+    public function __toString()
+    {
+        $cnt = count($this->getConditions());
+        if ($cnt === 0) {
+            return '';
+        }
+
+        if ($cnt === 1) {
+            return (string) $this->getConditions()[0];
+        }
+
+        $stringParts = array();
+        foreach ($this->getConditions() as $condition) {
+            if (!empty($stringParts)) {
+                $stringParts[] = $condition->getType();
+            }
+            $stringParts[] = (string) $condition;
+        }
+
+        return implode(' ', $stringParts);
+    }
 
     /**
      *
