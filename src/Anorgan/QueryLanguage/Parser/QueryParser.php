@@ -158,11 +158,13 @@ class QueryParser
      * ComparisonOperator ::= "=" | ":" | "<" | "<=" | ">" | ">=" | "!="
      *
      * @return string
+     * @throws Exception
      */
     public function ComparisonOperator()
     {
         switch ($this->lexer->lookahead['value']) {
             case '=':
+            case ':':
                 $this->match(QueryLexer::T_EQUAL);
 
                 return '=';
@@ -210,6 +212,19 @@ class QueryParser
     public function Value()
     {
         $values = [];
+
+        // Array of values
+        if ($this->lexer->isNextToken(QueryLexer::T_OPEN_BRACKETS)) {
+            $this->lexer->moveNext();
+            while (!$this->lexer->isNextToken(QueryLexer::T_CLOSE_BRACKETS)) {
+                $value = $this->Value();
+                if ($value == ',') {
+                    continue;
+                }
+                $values[] = $value;
+            }
+            return $values;
+        }
 
         if ($this->lexer->isNextToken(QueryLexer::T_DOUBLE_QUOTE)) {
             $this->lexer->moveNext();

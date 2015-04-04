@@ -21,6 +21,8 @@ class QueryLexer extends AbstractLexer
     const T_FLOAT               = 17;
     const T_INTEGER             = 18;
     const T_STRING              = 19;
+    const T_OPEN_BRACKETS       = 20;
+    const T_CLOSE_BRACKETS      = 21;
 
     /**
      * Array of patterns to catch
@@ -31,7 +33,7 @@ class QueryLexer extends AbstractLexer
     {
         return array(
             '[a-zA-Z0-9][a-zA-Z0-9_\.]*[a-z0-9_]{1}',
-            '[\!\=><\[\]\"]{1}',
+            '[\!\=\:><\[\]\"]{1}',
             '"(?:[^"]|\\")*"', // Quoted strings
             '(AND|OR)'
         );
@@ -85,6 +87,12 @@ class QueryLexer extends AbstractLexer
             case ($value === ')'):
                 return self::T_CLOSE_PARENTHESIS;
 
+            case ($value === '['):
+                return self::T_OPEN_BRACKETS;
+
+            case ($value === ']'):
+                return self::T_CLOSE_BRACKETS;
+
             case ($value === '.'):
                 return self::T_DOT;
 
@@ -92,6 +100,7 @@ class QueryLexer extends AbstractLexer
                 return self::T_NOT;
 
             case ($value === '='):
+            case ($value === ':'):
                 return self::T_EQUAL;
 
             case ($value === '>'):
