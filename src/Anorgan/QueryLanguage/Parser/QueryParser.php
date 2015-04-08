@@ -23,7 +23,7 @@ class QueryParser
 {
     /**
      *
-     * @var SelectLexer
+     * @var AbstractLexer
      */
     protected $lexer;
 
@@ -231,6 +231,7 @@ class QueryParser
             $this->lexer->moveNext();
 
             $startPosition = $this->lexer->token['position'];
+            $endPosition = null;
             while (true) {
                 if ($this->lexer->isNextToken(QueryLexer::T_DOUBLE_QUOTE) && $this->lexer->token['value'] !== '\\') {
                     // Not escaped quote, stop
