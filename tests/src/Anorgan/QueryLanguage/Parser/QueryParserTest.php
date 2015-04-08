@@ -121,18 +121,18 @@ class QueryParserTest extends \PHPUnit_Framework_TestCase
     public function testComparisonOperatorThrowsExceptionIfThereIsNoMatch()
     {
         $this->lexer->lookahead['value'] = 'no operator';
-        $this->object->ComparisonOperator();
+        $this->object->processComparisonOperator();
     }
 
     /**
      * @expectedException \Exception
      * @expectedExceptionMessage Error, expecting Literal, got fake type
-     * @covers Anorgan\QueryLanguage\Parser\QueryParser::Literal
+     * @covers Anorgan\QueryLanguage\Parser\QueryParser::processLiteral
      */
     public function testLiteralThrowsExceptionIfTokenIsOfWrongType()
     {
         $this->lexer->lookahead['type'] = 'fake type';
         $this->lexer->token['value'] = 'fake type';
-        $this->object->Literal();
+        $this->object->processLiteral();
     }
 }

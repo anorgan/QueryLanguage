@@ -12,7 +12,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "doctrine/lexer": "dev-master"
+        "doctrine/lexer": "~1.0"
     },
     "require-dev": {
       "phpunit/phpunit": "~4.6",

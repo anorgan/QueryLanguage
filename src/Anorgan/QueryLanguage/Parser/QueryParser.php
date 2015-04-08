@@ -48,7 +48,7 @@ class QueryParser
 
         $query = new Query;
 
-        $this->Query($query);
+        $this->processQuery($query);
 
         return $query;
     }
@@ -74,15 +74,15 @@ class QueryParser
      * Query                       ::= ConditionalTerm {"OR" ConditionalTerm}*
      * Create OR parts
      */
-    public function Query(Query $query)
+    public function processQuery(Query $query)
     {
         $this->lexer->moveNext();
 
-        $query->add($query->orX($this->ConditionalTerm($query)));
+        $query->add($query->orX($this->processConditionalTerm($query)));
         while ($this->lexer->isNextToken(QueryLexer::T_OR)) {
             $this->match(QueryLexer::T_OR);
 
-            $query->add($query->orX($this->ConditionalTerm($query)));
+            $query->add($query->orX($this->processConditionalTerm($query)));
         }
 
         return $query;
@@ -92,13 +92,13 @@ class QueryParser
      * ConditionalTerm             ::= ConditionalPrimary {"AND" ConditionalPrimary}*
      * Create AND parts
      */
-    public function ConditionalTerm(Query $query)
+    public function processConditionalTerm(Query $query)
     {
-        $composite = $query->andX($this->ConditionalPrimary($query));
+        $composite = $query->andX($this->processConditionalPrimary($query));
         while ($this->lexer->isNextToken(QueryLexer::T_AND)) {
             $this->match(QueryLexer::T_AND);
 
-            $composite->add($this->ConditionalPrimary($query));
+            $composite->add($this->processConditionalPrimary($query));
         }
 
         return $composite;
@@ -108,14 +108,14 @@ class QueryParser
      * ConditionalPrimary          ::= ComparisonExpression | "(" Query ")"
      * Create condition or composite (another Query)
      */
-    public function ConditionalPrimary(Query $query)
+    public function processConditionalPrimary(Query $query)
     {
         if (!$this->lexer->isNextToken(QueryLexer::T_OPEN_PARENTHESIS)) {
-            return $this->ComparisonExpression();
+            return $this->processComparisonExpression();
         }
 
         $this->match(QueryLexer::T_OPEN_PARENTHESIS);
-        $query = $this->Query($query);
+        $query = $this->processQuery($query);
         $this->match(QueryLexer::T_CLOSE_PARENTHESIS);
 
         return $query;
@@ -125,11 +125,11 @@ class QueryParser
      * ComparisonExpression        ::= Field ComparisonOperator Value
      * Create condition
      */
-    public function ComparisonExpression()
+    public function processComparisonExpression()
     {
-        $field      = $this->Field();
-        $operator   = $this->ComparisonOperator();
-        $value      = $this->Value();
+        $field      = $this->processField();
+        $operator   = $this->processComparisonOperator();
+        $value      = $this->processValue();
 
         return new Condition($field, $operator, $value);
     }
@@ -139,7 +139,7 @@ class QueryParser
      *
      * @return string
      */
-    public function Field()
+    public function processField()
     {
         $this->match(QueryLexer::T_STRING);
 
@@ -160,7 +160,7 @@ class QueryParser
      * @return string
      * @throws Exception
      */
-    public function ComparisonOperator()
+    public function processComparisonOperator()
     {
         switch ($this->lexer->lookahead['value']) {
             case '=':
@@ -210,7 +210,7 @@ class QueryParser
      * Value                       ::= Literal | "\"" Literal "\""
      * Get literal
      */
-    public function Value()
+    public function processValue()
     {
         $values = [];
 
@@ -218,7 +218,7 @@ class QueryParser
         if ($this->lexer->isNextToken(QueryLexer::T_OPEN_BRACKETS)) {
             $this->lexer->moveNext();
             while (!$this->lexer->isNextToken(QueryLexer::T_CLOSE_BRACKETS)) {
-                $value = $this->Value();
+                $value = $this->processValue();
                 if ($value == ',') {
                     continue;
                 }
@@ -245,7 +245,7 @@ class QueryParser
             $values[] = str_replace('\"', '"', substr($this->lexer->getInputUntilPosition($endPosition), $startPosition + 1));
 
         } else {
-            $values[] = $this->Literal();
+            $values[] = $this->processLiteral();
         }
 
         return implode(' ', $values);
@@ -255,7 +255,7 @@ class QueryParser
      * Literal                     ::= string | char | integer | float | boolean
      * Get terminal
      */
-    public function Literal()
+    public function processLiteral()
     {
         switch ($this->lexer->lookahead['type']) {
             case QueryLexer::T_STRING:

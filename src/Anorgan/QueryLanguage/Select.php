@@ -50,7 +50,7 @@ class Select implements \IteratorAggregate
         if (null === $this->_relations) {
             $this->_relations = array();
             foreach ($this->getFields() as $field) {
-                $this->_processField($field);
+                $this->processField($field);
             }
         }
 
@@ -70,7 +70,7 @@ class Select implements \IteratorAggregate
         return $this;
     }
 
-    protected function _processField($field)
+    protected function processField($field)
     {
         if (strpos($field, '.') === false) {
             return;
