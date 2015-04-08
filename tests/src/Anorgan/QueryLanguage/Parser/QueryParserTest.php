@@ -116,7 +116,7 @@ class QueryParserTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException \Exception
      * @expectedExceptionMessage Error matching comparison operator, expecting one of: =, :, <, <=, >, >=, !=, got no operator
-     * @covers Anorgan\QueryLanguage\Parser\QueryParser::ComparisonOperator
+     * @covers Anorgan\QueryLanguage\Parser\QueryParser::processComparisonOperator
      */
     public function testComparisonOperatorThrowsExceptionIfThereIsNoMatch()
     {
