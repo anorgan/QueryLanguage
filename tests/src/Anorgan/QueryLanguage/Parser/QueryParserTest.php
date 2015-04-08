@@ -37,9 +37,11 @@ class QueryParserTest extends \PHPUnit_Framework_TestCase
     public function testParse($inputQuery, $expectedQuery)
     {
         $this->assertEquals($expectedQuery, (string) $this->object->parse($inputQuery));
-//        $this->assertEquals($expectedQuery, (string) $this->object->parse($inputQuery), print_r($this->lexer, true));
     }
-    
+
+    /**
+     * @return array
+     */
     public function dataProviderTestParse()
     {
         $data = [];
@@ -49,6 +51,11 @@ class QueryParserTest extends \PHPUnit_Framework_TestCase
         $data['simple query' . $i++] = [
             'input'     => 'alfa=beta',
             'expected'  => 'alfa=beta'
+        ];
+
+        $data['simple query with array value' . $i++] = [
+            'input'     => 'alfa.beta = [a, b, c]',
+            'expected'  => 'alfa.beta=["a","b","c"]'
         ];
         
         $data['simple query quoted' . $i++] = [
@@ -62,13 +69,13 @@ class QueryParserTest extends \PHPUnit_Framework_TestCase
         ];
 
         $data['simple query, value has escaped quote w\o space' . $i++] = [
-            'input'     => 'field>="some\"value\""',
-            'expected'  => 'field>=some"value"'
+            'input'     => 'field<="some\"value\""',
+            'expected'  => 'field<=some"value"'
         ];
 
         $data['simple query, value has escaped quote with space' . $i++] = [
-            'input'     => 'some.field>="some \"value\""',
-            'expected'  => 'some.field>=some "value"'
+            'input'     => 'some.field<>"some \"value\""',
+            'expected'  => 'some.field!=some "value"'
         ];
 
         $data['complex query with AND' . $i++] = [
@@ -76,14 +83,19 @@ class QueryParserTest extends \PHPUnit_Framework_TestCase
             'expected'  => '(Parent.Relation.field!=174 systems) AND (some_field>13)'
         ];
 
-// Problems with OR 
-//        $data['complex query with OR' . $i++] = [
-//            'input'     => 'Parent.Relation.field != "174 systems" OR is_active < "2014-01-01"',
-//            'expected'  => 'Parent.Relation.field!=174 systems OR is_active<2014-01-01'
-//        ];
-//
+        $data['complex query with OR' . $i++] = [
+            'input'     => 'Parent.Relation.field != "174 systems" OR is_active < "2014-01-01"',
+            'expected'  => 'Parent.Relation.field!=174 systems OR is_active<2014-01-01'
+        ];
+
+// Problems with ConditionalPrimary returning query that gets passed to Query::add
 //        $data['complex query with both AND and OR' . $i++] = [
 //            'input'     => '(Parent.Relation.field != "174 systems") OR (is_active < "2014-01-01" AND true!=false)',
+//            'expected'  => 'Parent.Relation.field!=174 systems OR (is_active<2014-01-01 AND true!=false)'
+//        ];
+//
+//        $data['conditional primary' . $i++] = [
+//            'input'     => '(Parent.Relation.field != "174 systems") AND (is_active < "2014-01-01" AND true!=false)',
 //            'expected'  => 'Parent.Relation.field!=174 systems OR (is_active<2014-01-01 AND true!=false)'
 //        ];
 
@@ -92,99 +104,35 @@ class QueryParserTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @expectedException \Exception
+     * @expectedExceptionMessage Error matching token, expecting test
      * @covers Anorgan\QueryLanguage\Parser\QueryParser::match
-     * @todo   Implement testMatch().
      */
-    public function testMatch()
+    public function testMatchThrowsExceptionIfLookaheadTypeDoesNotMatch()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $this->object->match("test");
     }
 
     /**
-     * @covers Anorgan\QueryLanguage\Parser\QueryParser::Query
-     * @todo   Implement testQuery().
-     */
-    public function testQuery()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Anorgan\QueryLanguage\Parser\QueryParser::ConditionalTerm
-     * @todo   Implement testConditionalTerm().
-     */
-    public function testConditionalTerm()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Anorgan\QueryLanguage\Parser\QueryParser::ConditionalPrimary
-     * @todo   Implement testConditionalPrimary().
-     */
-    public function testConditionalPrimary()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Anorgan\QueryLanguage\Parser\QueryParser::ComparisonExpression
-     * @todo   Implement testComparisonExpression().
-     */
-    public function testComparisonExpression()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @covers Anorgan\QueryLanguage\Parser\QueryParser::Field
-     * @todo   Implement testField().
-     */
-    public function testField()
-    {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
+     * @expectedException \Exception
+     * @expectedExceptionMessage Error matching comparison operator, expecting one of: =, :, <, <=, >, >=, !=, got no operator
      * @covers Anorgan\QueryLanguage\Parser\QueryParser::ComparisonOperator
-     * @todo   Implement testComparisonOperator().
      */
-    public function testComparisonOperator()
+    public function testComparisonOperatorThrowsExceptionIfThereIsNoMatch()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $this->lexer->lookahead['value'] = 'no operator';
+        $this->object->ComparisonOperator();
     }
 
     /**
-     * @covers Anorgan\QueryLanguage\Parser\QueryParser::Value
-     * @todo   Implement testValue().
+     * @expectedException \Exception
+     * @expectedExceptionMessage Error, expecting Literal, got fake type
+     * @covers Anorgan\QueryLanguage\Parser\QueryParser::Literal
      */
-    public function testValue()
+    public function testLiteralThrowsExceptionIfTokenIsOfWrongType()
     {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $this->lexer->lookahead['type'] = 'fake type';
+        $this->lexer->token['value'] = 'fake type';
+        $this->object->Literal();
     }
-
 }

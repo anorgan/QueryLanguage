@@ -119,4 +119,36 @@ class QueryTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(2, $composite);
     }
 
+    /**
+     * @covers Anorgan\QueryLanguage\Query::__toString
+     */
+    public function testRenderingToStringWithoutConditionsReturnsEmptyString()
+    {
+        $this->assertEquals('', (string) $this->object);
+    }
+
+    /**
+     * @covers Anorgan\QueryLanguage\Query::__toString
+     */
+    public function testRenderingToStringWithOneComposition()
+    {
+        $conditionA = new Condition('field', '=', 'value');
+        $conditionB = new Condition('another_field', '<', 'value');
+
+        $this->object->add(Query::orX([$conditionA, $conditionB]));
+        $this->assertEquals('(field=value) OR (another_field<value)', (string) $this->object);
+    }
+
+    /**
+     * @covers Anorgan\QueryLanguage\Query::__toString
+     */
+    public function testRenderingToStringWithMultipleCompositions()
+    {
+        $conditionA = new Condition('field', '=', 'value');
+        $conditionB = new Condition('another_field', '<', 'value');
+
+        $this->object->add(Query::orX([$conditionA, $conditionB]));
+        $this->object->add(Query::andX([$conditionA, $conditionB]));
+        $this->assertEquals('(field=value) OR (another_field<value) AND (field=value) AND (another_field<value)', (string) $this->object);
+    }
 }

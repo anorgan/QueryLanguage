@@ -73,6 +73,22 @@ class QueryLexerTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers \Anorgan\QueryLanguage\Parser\QueryLexer::getType
      */
+    public function testOpenBracketsToken()
+    {
+        $this->assertTrue($this->object->isA("[", QueryLexer::T_OPEN_BRACKETS));
+    }
+
+    /**
+     * @covers \Anorgan\QueryLanguage\Parser\QueryLexer::getType
+     */
+    public function testCloseBracketsToken()
+    {
+        $this->assertTrue($this->object->isA("]", QueryLexer::T_CLOSE_BRACKETS));
+    }
+
+    /**
+     * @covers \Anorgan\QueryLanguage\Parser\QueryLexer::getType
+     */
     public function testDotToken()
     {
         $this->assertTrue($this->object->isA(".", QueryLexer::T_DOT));
@@ -140,6 +156,14 @@ class QueryLexerTest extends \PHPUnit_Framework_TestCase
     public function testStringTokenForQuotedString()
     {
         $this->assertTrue($this->object->isA('"some quoted string"', QueryLexer::T_STRING));
+    }
+
+    /**
+     * @covers \Anorgan\QueryLanguage\Parser\QueryLexer::getType
+     */
+    public function testNoneToken()
+    {
+        $this->assertTrue($this->object->isA(null, QueryLexer::T_NONE));
     }
     
     /**

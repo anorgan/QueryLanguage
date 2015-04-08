@@ -176,9 +176,10 @@ class QueryParser
                 if ($this->lexer->isNextToken(QueryLexer::T_EQUAL)) {
                     $this->match(QueryLexer::T_EQUAL);
                     $operator .= '=';
-                } else if ($this->lexer->isNextToken(QueryLexer::T_GREATER)) {
+                } elseif ($this->lexer->isNextToken(QueryLexer::T_GREATER)) {
                     $this->match(QueryLexer::T_GREATER);
-                    $operator .= '>';
+                    // "<>" becomes "!="
+                    $operator = '!=';
                 }
 
                 return $operator;
@@ -201,7 +202,7 @@ class QueryParser
                 return '!=';
 
             default:
-                throw new Exception('Error matching comparison opeartor, expecting one of: =, :, <, <=, >, >=, !=, got '. $this->lexer->lookahead['value']);
+                throw new Exception('Error matching comparison operator, expecting one of: =, :, <, <=, >, >=, !=, got '. $this->lexer->lookahead['value']);
         }
     }
 
